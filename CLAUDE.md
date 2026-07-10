@@ -29,7 +29,7 @@ Note: scaffolded with Next.js 16.2.10 (satisfies "14+") and Tailwind v4
 
 ## Status
 - [x] Phase 1: Scaffold + landing
-- [ ] Phase 2: Upload + parsing
+- [x] Phase 2: Upload + parsing
 - [ ] Phase 3: Analysis engine
 - [ ] Phase 4: Results UI
 - [ ] Phase 5: Auth + quota
@@ -40,3 +40,4 @@ Note: scaffolded with Next.js 16.2.10 (satisfies "14+") and Tailwind v4
 ## Decisions log
 - 2026-07-10: Skipped Phase 0 (manual prompt validation) at owner's discretion; risk accepted that F3 prompts are unvalidated going into Phase 3.
 - 2026-07-10: Scaffolded with create-next-app using yarn, Next.js 16.2.10 + Tailwind v4 (latest, satisfies "14+" requirement).
+- 2026-07-10: pdf-parse v2 (pdfjs-dist-based) fails under Turbopack's default server bundling — it tries to load `pdf.worker.mjs` via a relative path that breaks once bundled. Fixed by adding `serverExternalPackages: ["pdf-parse", "pdfjs-dist"]` in next.config.ts so Node resolves it natively. Verified working under both `next dev` and `next build && next start`.
