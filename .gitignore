@@ -37,6 +37,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# local file-based analysis storage (Phase 3 stopgap; Supabase in Phase 5)
+/.data
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

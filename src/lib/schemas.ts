@@ -59,3 +59,82 @@ export function validateJdText(text: string): string | null {
   }
   return null;
 }
+
+// --- SRS F3: analysis engine ---
+
+export const resumeFactsSchema = z.object({
+  skills: z.array(z.string()),
+  roles: z.array(z.string()),
+  achievements: z.array(z.string()),
+  keywords: z.array(z.string()),
+  years_of_experience: z.number(),
+});
+export type ResumeFacts = z.infer<typeof resumeFactsSchema>;
+
+export const jdFactsSchema = z.object({
+  must_have_requirements: z.array(z.string()),
+  nice_to_have: z.array(z.string()),
+  seniority: z.string(),
+  keywords: z.array(z.string()),
+});
+export type JdFacts = z.infer<typeof jdFactsSchema>;
+
+export const extractionResultSchema = z.object({
+  resume: resumeFactsSchema,
+  jd: jdFactsSchema,
+});
+export type ExtractionResult = z.infer<typeof extractionResultSchema>;
+
+export const gapSchema = z.object({
+  jd_requirement: z.string(),
+  evidence_in_resume: z.string(),
+  severity: z.enum(["high", "medium", "low"]),
+  why_it_matters: z.string(),
+});
+export type Gap = z.infer<typeof gapSchema>;
+
+export const rewrittenBulletSchema = z.object({
+  addresses_gap: z.string(),
+  bullet: z.string(),
+});
+export type RewrittenBullet = z.infer<typeof rewrittenBulletSchema>;
+
+export const llmAnalysisSchema = z.object({
+  match_score: z.number().min(0).max(100),
+  gaps: z.array(gapSchema).min(1),
+  rewritten_bullets: z.array(rewrittenBulletSchema).min(3).max(5),
+});
+export type LlmAnalysis = z.infer<typeof llmAnalysisSchema>;
+
+export const SCORE_BANDS = {
+  strong: "Strong match",
+  competitive: "Competitive",
+  borderline: "Borderline",
+  filtered: "Likely filtered out",
+} as const;
+export type ScoreBand = (typeof SCORE_BANDS)[keyof typeof SCORE_BANDS];
+
+export function scoreBand(score: number): ScoreBand {
+  if (score >= 85) return SCORE_BANDS.strong;
+  if (score >= 70) return SCORE_BANDS.competitive;
+  if (score >= 50) return SCORE_BANDS.borderline;
+  return SCORE_BANDS.filtered;
+}
+
+export const analysisResultSchema = llmAnalysisSchema.extend({
+  band: z.enum([
+    SCORE_BANDS.strong,
+    SCORE_BANDS.competitive,
+    SCORE_BANDS.borderline,
+    SCORE_BANDS.filtered,
+  ]),
+});
+export type AnalysisResult = z.infer<typeof analysisResultSchema>;
+
+export const analyzeResponseSchema = z.object({
+  id: z.string(),
+  createdAt: z.string(),
+  extraction: extractionResultSchema,
+  analysis: analysisResultSchema,
+});
+export type AnalyzeResponse = z.infer<typeof analyzeResponseSchema>;
